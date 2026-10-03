@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-weight-600: 600;
+  --font-weight-700: 700;
+  --font-weight-800: 800;
+  --color-mint: #10b981;
+  --color-mint-light: #d1fae5;
+  --color-mint-dark: #047857;
+  --color-tangerine: #f97316;
+  --color-tangerine-light: #ffedd5;
+  --color-tangerine-dark: #c2410c;
+  --color-sky: #0284c7;
+  --color-sky-light: #e0f2fe;
+  --color-sky-dark: #0369a1;
+  --color-violet-soft: #8b5cf6;
+  --color-violet-light: #ede9fe;
+  --color-violet-dark: #6d28d9;
+  --color-cream: #f0fdf4;
+  --color-ink: #1e293b;
+  --color-ink-soft: #475569;
+  --color-surface: #ffffff;
+  --color-surface-soft: #f8fafc;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100svh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    background:
+      radial-gradient(ellipse 80% 50% at 10% -10%, #d1fae5 0%, transparent 50%),
+      radial-gradient(ellipse 60% 40% at 90% 0%, #ffedd5 0%, transparent 45%),
+      radial-gradient(ellipse 50% 30% at 50% 100%, #e0f2fe 0%, transparent 40%),
+      linear-gradient(180deg, #f0fdf4 0%, #f8fafc 40%, #fff7ed 100%);
+    background-attachment: scroll;
+  }
+
+  @media (min-width: 1024px) {
+    body {
+      background-attachment: fixed;
+    }
+  }
+
+  #root {
+    min-height: 100svh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    touch-action: manipulation;
+  }
+
+  img,
+  svg,
+  video {
+    max-width: 100%;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    background: color-mix(in srgb, white 88%, transparent);
+    backdrop-filter: blur(12px);
+    border: 1px solid color-mix(in srgb, white 70%, #d1fae5);
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+
+  .safe-px {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+
+  .safe-pb {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .safe-bottom-nav {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+
+  .scroll-snap-x {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .scroll-snap-start {
+    scroll-snap-align: start;
+  }
+
+  .hide-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
