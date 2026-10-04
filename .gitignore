@@ -12,6 +12,14 @@ dist
 dist-ssr
 *.local
 
+# Secrets — jamais commités (les clés restent côté serveur)
+.env
+.env.*
+!.env.example
+
+# PIDs / logs du mode opératoire (make start)
+.pids/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -37,6 +37,11 @@ export type SchemaControl = {
   rightLabel?: string
 }
 
+export type PyramidFood = {
+  emoji: string
+  name: string
+}
+
 export type SchemaDefinition = {
   id: string
   title: string
@@ -52,6 +57,7 @@ export type SchemaDefinition = {
     role: string
     family: 'Bâtisseur' | 'Énergétique' | 'Fonctionnel' | 'Base'
     color: string
+    foods?: PyramidFood[]
   }[]
 }
 
@@ -84,14 +90,38 @@ export type LabCompetence = {
   description: string
 }
 
+export type LabProtocolStep = {
+  title: string
+  description: string
+}
+
+export type LabChallengeOption = {
+  id: string
+  label: string
+  correct: boolean
+}
+
+export type LabChallenge = {
+  title: string
+  prompt: string
+  options: LabChallengeOption[]
+  successMessage: string
+}
+
 export type LabPractical = {
   title: string
   problem: string
+  /** Accroche ludique type « mission » */
+  missionBrief?: string
+  /** Étapes du protocole à suivre */
+  steps?: LabProtocolStep[]
   samples: LabSample[]
   reagents: LabReagent[]
   experiments: LabExperiment[]
   conclusion: string
   competences: LabCompetence[]
+  /** Mini-défi final après les manip' */
+  challenge?: LabChallenge
 }
 
 export type FoodCategory = 'batisseur' | 'energetique' | 'fonctionnel'

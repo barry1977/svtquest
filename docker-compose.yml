@@ -6,10 +6,23 @@ services:
     image: svtquest:latest
     container_name: svtquest
     ports:
-      - "${PORT:-8080}:80"
+      # HOST_PORT = port sur ta machine (ne pas réutiliser PORT du serveur Node / .env)
+      - "${HOST_PORT:-8080}:80"
+    environment:
+      NODE_ENV: production
+      PORT: "80"
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      OPENAI_QUESTION_COUNT: ${OPENAI_QUESTION_COUNT:-10}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/health"]
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
       interval: 30s
       timeout: 3s
       retries: 3

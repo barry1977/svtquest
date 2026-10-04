@@ -13,11 +13,16 @@ export function PyramidSchema({ schema }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
-        <div className="flex flex-col items-center rounded-2xl border-2 border-mint/20 bg-white/80 p-4 shadow-lg sm:p-6">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="flex flex-col items-center rounded-2xl border-2 border-mint/20 bg-gradient-to-b from-sky-light/40 via-white to-mint-light/30 p-3 shadow-lg sm:p-6">
+          <p className="mb-3 text-center text-[11px] font-800 uppercase tracking-wide text-ink-soft">
+            Sommet = rarement · Base = souvent
+          </p>
           {tiers.map((tier, index) => {
-            const widthPercent = 42 + index * 8
+            // Largeur croissante, mais jamais trop étroite pour les icônes
+            const widthPercent = Math.min(96, 52 + index * 7)
             const isActive = activeId === tier.id
+            const foods = tier.foods ?? []
             return (
               <motion.button
                 key={tier.id}
@@ -26,19 +31,36 @@ export function PyramidSchema({ schema }: Props) {
                 onFocus={() => setActiveId(tier.id)}
                 onClick={() => setActiveId(tier.id)}
                 animate={{
-                  scale: isActive ? 1.04 : 1,
+                  scale: isActive ? 1.02 : 1,
                   width: `${widthPercent}%`,
                 }}
-                transition={{ type: 'spring', stiffness: 280, damping: 20 }}
-                className="relative my-1 min-w-[140px] rounded-xl px-2 py-2.5 text-center text-xs font-800 text-white shadow-md sm:min-w-[160px] sm:px-3 sm:py-3 sm:text-sm"
+                transition={{ type: 'spring', stiffness: 280, damping: 22 }}
+                className="relative my-1.5 w-full max-w-full rounded-2xl px-3 py-3 text-center text-white shadow-md"
                 style={{
                   backgroundColor: tier.color,
                   boxShadow: isActive
                     ? `0 0 0 3px white, 0 0 0 6px ${tier.color}`
                     : undefined,
+                  minWidth: 'min(100%, 240px)',
                 }}
               >
-                {tier.label}
+                <span className="block text-xs font-800 leading-snug sm:text-sm">
+                  {tier.label}
+                </span>
+                {foods.length > 0 && (
+                  <span className="mt-2 flex flex-wrap items-center justify-center gap-1.5">
+                    {foods.map((food) => (
+                      <span
+                        key={`${tier.id}-${food.name}`}
+                        title={food.name}
+                        className="emoji inline-flex items-center justify-center rounded-full bg-white px-1.5 py-0.5 text-[1.35rem] shadow-md ring-2 ring-white/80"
+                        aria-label={food.name}
+                      >
+                        {food.emoji}
+                      </span>
+                    ))}
+                  </span>
+                )}
               </motion.button>
             )
           })}
@@ -61,6 +83,26 @@ export function PyramidSchema({ schema }: Props) {
                 Étage sélectionné
               </p>
               <h3 className="mt-1 text-xl font-800 text-ink">{active.label}</h3>
+
+              {(active.foods?.length ?? 0) > 0 && (
+                <div className="mt-3">
+                  <p className="mb-2 text-xs font-800 uppercase text-ink-soft">
+                    Exemples d&apos;aliments
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {active.foods!.map((food) => (
+                      <span
+                        key={food.name}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-2.5 py-1.5 text-xs font-700 text-ink shadow-sm ring-1 ring-slate-200"
+                      >
+                        <span className="emoji text-xl">{food.emoji}</span>
+                        {food.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <dl className="mt-4 space-y-3 text-sm">
                 <div>
                   <dt className="font-800 text-ink-soft">Fréquence</dt>

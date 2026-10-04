@@ -4,13 +4,22 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently -k -n api,web -c cyan,magenta \"npm:dev:server\" \"npm:dev:client\"",
+    "dev:client": "vite",
+    "dev:server": "node --watch server/index.mjs",
     "build": "tsc -b && vite build",
     "lint": "tsc -b --pretty false",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "NODE_ENV=production node server/index.mjs",
+    "app:start": "make start",
+    "app:stop": "make stop",
+    "app:restart": "make restart",
+    "app:status": "make status"
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
     "framer-motion": "^14.0.0",
     "lucide-react": "^1.51.0",
     "react": "^19.2.8",
@@ -23,6 +32,7 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^4.4.1",
+    "concurrently": "^9.2.1",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
     "vite": "^6.3.5"

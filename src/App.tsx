@@ -8,7 +8,7 @@ import { SectionNav } from '@/components/layout/SectionNav'
 import { SummaryPanel } from '@/components/Summary/SummaryPanel'
 import { MindMap } from '@/components/MindMap/MindMap'
 import { SchemasPanel } from '@/components/Schemas/SchemasPanel'
-import { LabBench } from '@/components/Lab/LabBench'
+import { LabPanel } from '@/components/Lab/LabPanel'
 import { GamesPanel } from '@/components/Games/GamesPanel'
 import { QuizPanel } from '@/components/Quiz/QuizPanel'
 
@@ -68,13 +68,22 @@ export default function App() {
             )}
             {section === 'schemas' && <SchemasPanel schemas={course.schemas} />}
             {section === 'lab' && (
-              <LabBench lab={course.labPractical} onStar={() => addStars(1)} />
+              <LabPanel
+                course={course}
+                lab={course.labPractical}
+                onStar={() => addStars(1)}
+              />
             )}
             {section === 'games' && (
-              <GamesPanel games={course.miniGames} onStar={() => addStars(1)} />
+              <GamesPanel
+                course={course}
+                games={course.miniGames}
+                onStar={() => addStars(1)}
+              />
             )}
             {section === 'quiz' && (
               <QuizPanel
+                course={course}
                 flashcards={course.flashcards}
                 quiz={course.quiz}
                 onStar={() => addStars(1)}

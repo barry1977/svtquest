@@ -1,0 +1,33 @@
+---
+description: SVT Quest — conventions obligatoires pour tout nouveau chapitre ou feature pédagogique
+alwaysApply: true
+---
+
+# SVT Quest — règles permanentes
+
+Avant d’ajouter/modifier un chapitre ou une feature pédagogique, lire `CONTEXT.md` (checklist « nouveau chapitre »).
+
+## Course Engine
+- Un chapitre = fichier `src/data/courses/<id>.ts` conforme à `CourseModule`, enregistré dans `index.ts`.
+- Référence de richesse : `nutrition.ts` (pas de stub vide si l’utilisateur demande un vrai chapitre).
+- Étendre `src/types/course.ts` avant d’inventer des champs.
+
+## Contenu minimal d’un chapitre
+Summary, mind map (+ défis), schémas, labo TP ludique, mini-jeux, flashcards, QCM — tous cohérents avec le thème et le niveau 6e/5e.
+
+## UX / retours utilisateurs (à respecter)
+- Mind map : textes dans les cercles ; **carte entière visible** dans le cadre au chargement.
+- Emojis/icônes lisibles (fallback emoji ; Nunito peut les masquer).
+- Jeux : grand pool, tirage varié, anti-répétition ; « Rejouer » doit changer le deck.
+- Libellés élèves **sans** « IA » / « OpenAI » / jargon API → « Nouveau QCM », « Nouveau TP », « Nouveaux aliments ».
+- Confetti : canvas transparent (`src/lib/confetti.ts`) ; éviter flash noir ; pas de confetti à chaque micro-clic.
+
+## Génération & secrets
+- OpenAI **uniquement serveur** (`server/`, `api/`) — jamais `VITE_` pour les clés.
+- Contexte leçon via `buildLessonContext` ; fallback = contenu du cours si génération KO.
+- Messages d’erreur simples côté élève (« Génération indisponible »).
+
+## Ops
+- `make start|stop|restart|status` ; Docker via `HOST_PORT` (≠ `PORT`).
+- Commits seulement si l’utilisateur le demande.
+- Si de nouvelles règles émergent, mettre à jour `CONTEXT.md`.

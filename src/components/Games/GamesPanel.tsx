@@ -1,13 +1,14 @@
-import type { MiniGameConfig } from '@/types/course'
+import type { CourseModule, MiniGameConfig } from '@/types/course'
 import { SortGame } from './SortGame'
 import { PlateGame } from './PlateGame'
 
 type Props = {
+  course: CourseModule
   games: MiniGameConfig[]
   onStar?: () => void
 }
 
-export function GamesPanel({ games, onStar }: Props) {
+export function GamesPanel({ course, games, onStar }: Props) {
   return (
     <div className="space-y-6">
       <div>
@@ -25,6 +26,7 @@ export function GamesPanel({ games, onStar }: Props) {
               title={game.title}
               description={game.description}
               items={game.items}
+              course={course}
               onStar={onStar}
             />
           )

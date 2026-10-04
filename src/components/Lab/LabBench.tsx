@@ -1,8 +1,15 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Beaker, CheckCircle2, ClipboardCheck, Pipette } from 'lucide-react'
+import {
+  Beaker,
+  CheckCircle2,
+  ClipboardCheck,
+  FlaskConical,
+  Pipette,
+  Trophy,
+} from 'lucide-react'
 import type { LabPractical } from '@/types/course'
-import { celebrateSuccess } from '@/lib/confetti'
+import { celebrateStars, celebrateSuccess } from '@/lib/confetti'
 
 type Props = {
   lab: LabPractical
@@ -19,8 +26,23 @@ export function LabBench({ lab, onStar }: Props) {
   const [reagentId, setReagentId] = useState(lab.reagents[0]?.id ?? '')
   const [pouring, setPouring] = useState(false)
   const [lastResultId, setLastResultId] = useState<string | null>(null)
+  const [doneIds, setDoneIds] = useState<Set<string>>(() => new Set())
   const [showCorrection, setShowCorrection] = useState(false)
   const [table, setTable] = useState<Record<string, CellEntry>>({})
+  const [challengePick, setChallengePick] = useState<string | null>(null)
+  const [challengeWon, setChallengeWon] = useState(false)
+
+  useEffect(() => {
+    setSampleId(lab.samples[0]?.id ?? '')
+    setReagentId(lab.reagents[0]?.id ?? '')
+    setPouring(false)
+    setLastResultId(null)
+    setDoneIds(new Set())
+    setShowCorrection(false)
+    setTable({})
+    setChallengePick(null)
+    setChallengeWon(false)
+  }, [lab])
 
   const experiment = useMemo(
     () =>
@@ -29,6 +51,9 @@ export function LabBench({ lab, onStar }: Props) {
       ),
     [lab.experiments, sampleId, reagentId],
   )
+
+  const progress = Math.round((doneIds.size / Math.max(lab.experiments.length, 1)) * 100)
+  const challengeReady = doneIds.size >= Math.min(4, lab.experiments.length)
 
   const runExperiment = () => {
     if (!experiment) {
@@ -39,6 +64,7 @@ export function LabBench({ lab, onStar }: Props) {
     setTimeout(() => {
       setPouring(false)
       setLastResultId(experiment.id)
+      setDoneIds((prev) => new Set(prev).add(experiment.id))
       setTable((prev) => ({
         ...prev,
         [experiment.id]: prev[experiment.id] ?? {
@@ -51,11 +77,7 @@ export function LabBench({ lab, onStar }: Props) {
     }, 900)
   }
 
-  const updateCell = (
-    id: string,
-    field: keyof CellEntry,
-    value: string,
-  ) => {
+  const updateCell = (id: string, field: keyof CellEntry, value: string) => {
     setTable((prev) => ({
       ...prev,
       [id]: {
@@ -68,18 +90,73 @@ export function LabBench({ lab, onStar }: Props) {
 
   const activeResult = lab.experiments.find((e) => e.id === lastResultId)
 
+  const answerChallenge = (optionId: string) => {
+    if (!lab.challenge || challengeWon || challengePick) return
+    setChallengePick(optionId)
+    const option = lab.challenge.options.find((o) => o.id === optionId)
+    if (option?.correct) {
+      setChallengeWon(true)
+      celebrateStars()
+      onStar?.()
+      return
+    }
+    window.setTimeout(() => setChallengePick(null), 1400)
+  }
+
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-xl font-800 text-ink">Laboratoire de TP virtuel</h2>
-        <p className="text-sm font-700 text-violet-dark">{lab.title}</p>
-        <p className="mt-1 text-sm text-ink-soft">
-          <span className="font-800">Problématique :</span> {lab.problem}
-        </p>
+      <div className="rounded-2xl border-2 border-violet-soft/25 bg-gradient-to-br from-violet-light/60 via-white to-mint-light/40 p-4 shadow-lg sm:p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-800 uppercase tracking-wide text-violet-soft">
+              Laboratoire de TP virtuel
+            </p>
+            <h2 className="mt-1 text-xl font-800 text-ink">{lab.title}</h2>
+            {lab.missionBrief && (
+              <p className="mt-2 max-w-3xl text-sm font-600 leading-relaxed text-ink-soft">
+                {lab.missionBrief}
+              </p>
+            )}
+            <p className="mt-2 text-sm text-ink">
+              <span className="font-800 text-violet-dark">Problématique :</span>{' '}
+              {lab.problem}
+            </p>
+          </div>
+          <div className="rounded-2xl bg-white px-4 py-3 text-center shadow-md ring-1 ring-violet-soft/20">
+            <p className="text-[11px] font-800 uppercase text-ink-soft">Progression</p>
+            <p className="text-2xl font-800 text-mint-dark">
+              {doneIds.size}/{lab.experiments.length}
+            </p>
+            <p className="text-xs font-700 text-ink-soft">tests réussis</p>
+          </div>
+        </div>
+
+        <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/80">
+          <motion.div
+            className="h-full rounded-full bg-gradient-to-r from-violet-soft to-mint"
+            animate={{ width: `${progress}%` }}
+          />
+        </div>
+
+        {lab.steps && lab.steps.length > 0 && (
+          <ol className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {lab.steps.map((step, i) => (
+              <li
+                key={step.title}
+                className="rounded-xl bg-white/90 px-3 py-2 shadow-sm ring-1 ring-slate-100"
+              >
+                <p className="text-xs font-800 text-violet-soft">
+                  Étape {i + 1}
+                </p>
+                <p className="text-sm font-800 text-ink">{step.title.replace(/^\d+\.\s*/, '')}</p>
+                <p className="mt-0.5 text-xs font-600 text-ink-soft">{step.description}</p>
+              </li>
+            ))}
+          </ol>
+        )}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        {/* Paillasse */}
         <div className="rounded-2xl border-2 border-violet-soft/30 bg-gradient-to-br from-violet-light/50 to-white p-4 shadow-lg">
           <h3 className="mb-3 flex items-center gap-2 font-800 text-ink">
             <Beaker size={18} className="text-violet-soft" />
@@ -93,13 +170,13 @@ export function LabBench({ lab, onStar }: Props) {
                 key={s.id}
                 type="button"
                 onClick={() => setSampleId(s.id)}
-                className={`min-h-11 rounded-2xl px-3 py-2 text-left text-sm font-700 shadow-sm ${
+                className={`min-h-11 rounded-2xl px-3 py-2 text-left text-sm font-700 shadow-sm transition ${
                   sampleId === s.id
                     ? 'bg-violet-soft text-white'
                     : 'bg-white hover:bg-violet-light'
                 }`}
               >
-                {s.emoji} {s.name}
+                <span className="mr-1 text-base">{s.emoji}</span> {s.name}
               </button>
             ))}
           </div>
@@ -111,7 +188,7 @@ export function LabBench({ lab, onStar }: Props) {
                 key={r.id}
                 type="button"
                 onClick={() => setReagentId(r.id)}
-                className={`rounded-2xl px-3 py-2 text-left text-sm font-700 shadow-sm ${
+                className={`rounded-2xl px-3 py-2 text-left text-sm font-700 shadow-sm transition ${
                   reagentId === r.id
                     ? 'bg-sky text-white'
                     : 'bg-white hover:bg-sky-light'
@@ -128,12 +205,12 @@ export function LabBench({ lab, onStar }: Props) {
           <button
             type="button"
             onClick={runExperiment}
-            className="w-full rounded-2xl bg-mint px-4 py-3 text-sm font-800 text-white shadow-lg hover:bg-mint-dark"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-mint px-4 py-3 text-sm font-800 text-white shadow-lg hover:bg-mint-dark"
           >
+            <FlaskConical size={18} />
             Verser le réactif / Lancer le test
           </button>
 
-          {/* Tube visualization */}
           <div className="relative mt-6 flex h-48 items-end justify-center">
             <div className="relative h-40 w-16 overflow-hidden rounded-b-3xl rounded-t-lg border-4 border-slate-300 bg-white/60">
               <motion.div
@@ -176,23 +253,24 @@ export function LabBench({ lab, onStar }: Props) {
           )}
         </div>
 
-        {/* Tableau élève */}
         <div className="rounded-2xl border-2 border-mint/20 bg-white p-4 shadow-lg">
           <h3 className="mb-3 flex items-center gap-2 font-800 text-ink">
             <ClipboardCheck size={18} className="text-mint" />
-            Tableau de saisie
+            Carnet de labo
           </h3>
-          <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+          <div className="max-h-[460px] space-y-3 overflow-y-auto pr-1">
             {lab.experiments.map((exp) => {
               const sample = lab.samples.find((s) => s.id === exp.sampleId)
               const reagent = lab.reagents.find((r) => r.id === exp.reagentId)
               const entry = table[exp.id]
-              const unlocked = Boolean(entry) || lastResultId === exp.id
+              const unlocked = doneIds.has(exp.id) || lastResultId === exp.id
               return (
                 <div
                   key={exp.id}
                   className={`rounded-xl border p-3 ${
-                    unlocked ? 'border-mint/40 bg-mint-light/30' : 'border-slate-200 bg-slate-50'
+                    unlocked
+                      ? 'border-mint/40 bg-mint-light/30'
+                      : 'border-slate-200 bg-slate-50'
                   }`}
                 >
                   <p className="text-sm font-800">
@@ -207,7 +285,7 @@ export function LabBench({ lab, onStar }: Props) {
                           onChange={(e) =>
                             updateCell(exp.id, 'observation', e.target.value)
                           }
-                          placeholder="Ex. Devient bleu foncé"
+                          placeholder="Ex. Devient violet-noir"
                           className="mt-1 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm font-600"
                         />
                       </label>
@@ -234,6 +312,57 @@ export function LabBench({ lab, onStar }: Props) {
           </div>
         </div>
       </div>
+
+      {lab.challenge && (
+        <div className="rounded-2xl border-2 border-tangerine/30 bg-gradient-to-br from-tangerine-light/50 to-white p-4 shadow-lg sm:p-5">
+          <h3 className="flex items-center gap-2 text-lg font-800 text-tangerine-dark">
+            <Trophy size={20} />
+            {lab.challenge.title}
+          </h3>
+          {!challengeReady ? (
+            <p className="mt-2 text-sm font-600 text-ink-soft">
+              Fais au moins {Math.min(4, lab.experiments.length)} tests pour débloquer le défi
+              final…
+            </p>
+          ) : (
+            <>
+              <p className="mt-2 text-sm font-700 text-ink">{lab.challenge.prompt}</p>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                {lab.challenge.options.map((opt) => {
+                  const picked = challengePick === opt.id
+                  let style = 'bg-white border-slate-200 hover:bg-tangerine-light/40'
+                  if (challengePick) {
+                    if (opt.correct) style = 'bg-mint-light border-mint text-mint-dark'
+                    else if (picked) style = 'bg-tangerine-light border-tangerine text-tangerine-dark'
+                    else style = 'bg-slate-50 border-slate-200 opacity-70'
+                  }
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      disabled={Boolean(challengePick)}
+                      onClick={() => answerChallenge(opt.id)}
+                      className={`rounded-2xl border-2 px-3 py-3 text-left text-sm font-700 transition ${style}`}
+                    >
+                      {opt.label}
+                    </button>
+                  )
+                })}
+              </div>
+              {challengeWon && (
+                <p className="mt-3 rounded-xl bg-mint-light px-3 py-2 text-sm font-800 text-mint-dark">
+                  {lab.challenge.successMessage}
+                </p>
+              )}
+              {challengePick && !challengeWon && (
+                <p className="mt-3 rounded-xl bg-white px-3 py-2 text-sm font-700 text-tangerine-dark">
+                  Pas tout à fait… Relis tes observations du carnet, puis réessaie !
+                </p>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       <button
         type="button"
